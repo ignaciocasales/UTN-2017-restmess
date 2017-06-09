@@ -1,23 +1,29 @@
 # Proyecto Segundo Parcial - REST Message Service
 
+[![Build Status](https://travis-ci.org/ignaciocasales/UTN-2017-restmess.svg?branch=master)](https://travis-ci.org/ignaciocasales/UTN-2017-restmess)
+
 ##### Desarrollado por
 
 - Ignacio Casales
 
 ## Características
 
-| HTTP Method |             URL             |                    Respuesta                    |   HTTP Status   | Desarrollo |
-|:-----------:|:---------------------------:|:-----------------------------------------------:|:---------------:|:----------:|
-|     GET     | /user/list                  | Devuelve en JSON todos los usarios del sistema. |   200/204 /500  |     ...    |
-|     POST    | /user/create                | Crea un usuario en el sistema.                  |     201/500     |     ...    |
-|    DELETE   | /user/delete/{username}     | Borra un usuario por su username.               |     200/500     |     ...    |
-|     POST    | /message/send               | Envia un mensaje.                               |     200/500     |     ...    |
-|    PATCH    | /message/{id}/delete        | Marca un mensaje como borrado.                  |     200/500     |     ...    |
-|     GET     | /message/{username}/inbox   | Devuelve en JSON el inbox de un usuario.        | 200/403/404/500 |     ...    |
-|     GET     | /message/{username}/starred | Devuelve en JSON los favoritos de un usuario.   | 200/403/404/500 |     ...    |
-|     GET     | /message/{username}/trash   | Devuelve en JSON el trash de un usuario.        | 200/403/404/500 |     ...    |
-|     POST    | /api/login                  | Loguea un usuario.                              |   200/401/500   |     ...    |
-|     GET     | /api/logout                 | Desloguea un usuario.                           |     200/500     |     ...    |
+| HTTP Method |             Endpoint             |                            Respuesta                           |   HTTP Status   |
+|:-----------:|:--------------------------------:|:--------------------------------------------------------------:|:---------------:|
+|     GET     | /api/users                       | Devuelve en JSON todos los usarios del sistema.                | 200/204/403/500 |
+|     GET     | /api/users/{name}                | Devuelve en JSON todos los usarios con ese nombre del sistema. | 200/204/403/500 |
+|     GET     | /api/users/{username}            | Devuelve en JSON un usuario.                                   | 200/204/403/500 |
+|     POST    | /api/users                       | Crea un usuario en el sistema.                                 |     201/500     |
+|    DELETE   | /api/users/{username}            | Borra un usuario por su username.                              |   200/403/500   |
+|     GET     | /api/messages/{username}         | Devuelve en JSON el inbox de un usuario.                       | 200/204/403/500 |
+|     GET     | /api/messages/{username}/sent    |                                                                | 200/204/403/500 |
+|     GET     | /api/messages/{username}/starred | Devuelve en JSON los favoritos de un usuario.                  | 200/204/403/500 |
+|     GET     | /api/messages/{username}/trash   | Devuelve en JSON el trash de un usuario.                       | 200/204/403/500 |
+|     POST    | /api/messages                    | Crea y envia un mensaje.                                       |     201/500     |
+|    PATCH    | /api/messages/{id}               | Modifica un mensaje.                                           |     200/500     |
+|     GET     | /                                | Index.                                                         |   200/204/500   |
+|     POST    | /login                           | Loguea un usuario.                                             |   200/401/500   |
+|     GET     | /logout                          | Desloguea un usuario.                                          |     200/500     |
 
 ---
 
