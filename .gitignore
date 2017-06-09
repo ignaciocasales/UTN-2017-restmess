@@ -42,4 +42,4 @@ buildNumber.properties
 
 .idea
 *.iml
-./src/main/resources/application.properties
+src/main/resources/application.properties
