@@ -1,0 +1,143 @@
+package com.utn.restmess.entities;
+
+import javax.persistence.*;
+import java.sql.Timestamp;
+
+/**
+ * Created by ignacio on 6/7/17.
+ * <p>
+ * Message class entity.
+ */
+@SuppressWarnings("unused")
+@Entity
+@Table(name = "messages")
+public class Message {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "message_id", nullable = false)
+    private long id;
+
+    @Column(name = "sender", nullable = false)
+    private String sender;
+
+    @Column(name = "recipients", nullable = false)
+    private String recipients;
+
+    @Column(name = "subject", nullable = false)
+    private String subject;
+
+    @Column(name = "created_at", nullable = false)
+    private Timestamp created;
+
+    @Column(name = "content", nullable = false)
+    private String content;
+
+    @Column(name = "starred", nullable = false)
+    private Boolean starred;
+
+    @Column(name = "deleted", nullable = false)
+    private Boolean deleted;
+
+    public Message() {
+    }
+
+    public Message(String sender,
+                   String recipients,
+                   String subject,
+                   Timestamp created,
+                   String content,
+                   Boolean starred,
+                   Boolean deleted) {
+        this.sender = sender;
+        this.recipients = recipients;
+        this.subject = subject;
+        this.created = created;
+        this.content = content;
+        this.starred = starred;
+        this.deleted = deleted;
+    }
+
+    public Message(long id,
+                   String sender,
+                   String recipients,
+                   String subject,
+                   Timestamp created,
+                   String content,
+                   Boolean starred,
+                   Boolean deleted
+    ) {
+        this.id = id;
+        this.sender = sender;
+        this.recipients = recipients;
+        this.subject = subject;
+        this.created = created;
+        this.content = content;
+        this.starred = starred;
+        this.deleted = deleted;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getRecipients() {
+        return recipients;
+    }
+
+    public void setRecipients(String recipients) {
+        this.recipients = recipients;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Boolean getStarred() {
+        return starred;
+    }
+
+    public void setStarred(Boolean starred) {
+        this.starred = starred;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+}
