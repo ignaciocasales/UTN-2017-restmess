@@ -1,7 +1,10 @@
 package com.utn.restmess.persistence;
 
 import com.utn.restmess.entities.Message;
+import com.utn.restmess.entities.User;
 import org.springframework.data.repository.CrudRepository;
+
+import java.util.List;
 
 /**
  * Created by ignacio on 6/7/17.

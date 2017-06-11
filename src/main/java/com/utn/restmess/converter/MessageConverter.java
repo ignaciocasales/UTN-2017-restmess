@@ -2,6 +2,7 @@ package com.utn.restmess.converter;
 
 import com.utn.restmess.entities.Message;
 import com.utn.restmess.response.MessageWrapper;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,10 +23,15 @@ public class MessageConverter {
         m.setSender(message.getSender());
         m.setRecipients(message.getRecipients());
         m.setSubject(message.getSubject());
-        m.setCreated(message.getCreated());
+
+        DateTime dateTime = new DateTime(message.getCreated());
+        m.setSent(
+                dateTime.getDayOfMonth() +
+                        "/" + dateTime.getMonthOfYear() +
+                        "/" + dateTime.getYearOfEra()
+        );
+
         m.setContent(message.getContent());
-        m.setStarred(message.getStarred());
-        m.setDeleted(message.getDeleted());
 
         return m;
     }

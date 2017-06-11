@@ -18,6 +18,6 @@ public class IndexController {
     @RequestMapping("/")
     public @ResponseBody
     ResponseEntity<String> index() {
-        return new ResponseEntity<>("TP restmess API by Ignacio Casales", HttpStatus.OK);
+        return new ResponseEntity<>("Index", HttpStatus.OK);
     }
 }
