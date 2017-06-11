@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * <p>
  * User Request.
  */
-@SuppressWarnings("unused")
 public class UserRequest {
 
     @JsonProperty("first_name")

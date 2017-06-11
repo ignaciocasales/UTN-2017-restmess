@@ -22,7 +22,6 @@ import java.util.List;
  * <p>
  * UserController class.
  */
-@SuppressWarnings("unused")
 @RestController
 @RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {

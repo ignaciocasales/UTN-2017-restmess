@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>
  * Index Controller.
  */
-@SuppressWarnings("unused")
 @RestController
 public class IndexController {
 

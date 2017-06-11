@@ -11,7 +11,6 @@ import java.sql.Timestamp;
  * <p>
  * Message class entity.
  */
-@SuppressWarnings("unused")
 @Entity
 @Table(name = "messages")
 public class Message {
@@ -43,7 +42,7 @@ public class Message {
     private Boolean deleted;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="user_fk", nullable = false)
+    @JoinColumn(name = "user_fk", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 

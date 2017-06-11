@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * <p>
  * SessionWrapper
  */
-@SuppressWarnings("unused")
 public class SessionWrapper {
 
     @JsonProperty

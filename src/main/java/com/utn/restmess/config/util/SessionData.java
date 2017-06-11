@@ -14,12 +14,12 @@ import java.util.UUID;
 /**
  * Created by pablo on 01/11/16.
  * <p>
- * SessionData.
+ * SessionData class.
  */
-@SuppressWarnings("unused")
 @Service
 public class SessionData {
 
+    @SuppressWarnings("unused")
     final static Logger logger = Logger.getLogger(SessionData.class);
     private HashMap<String, AuthenticationData> sessionData;
 
@@ -66,5 +66,4 @@ public class SessionData {
             }
         }
     }
-
 }

@@ -5,6 +5,7 @@ import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.MessageRepository;
 import com.utn.restmess.persistence.UserRepository;
+import com.utn.restmess.request.message.MessagePatchRequest;
 import com.utn.restmess.request.message.MessagePostRequest;
 import com.utn.restmess.response.MessageWrapper;
 import org.joda.time.DateTime;
@@ -24,7 +25,6 @@ import java.util.List;
  * <p>
  * MessageController class.
  */
-@SuppressWarnings("unused")
 @RestController
 @RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MessageController {
@@ -186,8 +186,36 @@ public class MessageController {
     }
 
     @RequestMapping(value = "/messages/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void delete() {
-        //TODO
+    public @ResponseBody
+    ResponseEntity delete(@PathVariable("id") long id, @RequestBody MessagePatchRequest request) {
+        try {
+            Message m = messageRepository.findOne(id);
+
+            if (m == null) {
+                throw new NullPointerException();
+            }
+
+            switch (request.getType()) {
+                case "star":
+                    m.setStarred(request.getValue());
+                    break;
+                case "delete":
+                    m.setDeleted(request.getValue());
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return new ResponseEntity(HttpStatus.OK);
+        } catch (NotImplementedException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private List<MessageWrapper> convertList(List<Message> message) {

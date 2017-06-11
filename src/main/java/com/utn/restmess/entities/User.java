@@ -13,7 +13,6 @@ import java.util.List;
  * <p>
  * User class entity.
  */
-@SuppressWarnings("unused")
 @Entity
 @Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"username", "email"})})
 public class User {
@@ -52,7 +51,7 @@ public class User {
     private String country;
 
     @NotEmpty(message = "Username is required.")
-    @Column(name = "username",columnDefinition = "varchar(20)", unique = true, nullable = false)
+    @Column(name = "username", columnDefinition = "varchar(20)", unique = true, nullable = false)
     private String username;
 
     @NotEmpty(message = "Password is required.")
@@ -64,15 +63,7 @@ public class User {
     @Column(name = "email", columnDefinition = "varchar(50)", unique = true, nullable = false)
     private String email;
 
-    /* Old relationship
-    @OneToMany
-    @JoinTable(
-            name = "usermessages",
-            joinColumns = @JoinColumn(name = "userid"),
-            inverseJoinColumns = @JoinColumn(name = "messageid")
-    )
-    */
-    @OneToMany(mappedBy="user")
+    @OneToMany(mappedBy = "user")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Message> msgList;
 

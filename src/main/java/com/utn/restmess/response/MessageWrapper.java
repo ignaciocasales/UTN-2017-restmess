@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * <p>
  * Message Wrapper
  */
-@SuppressWarnings("unused")
 public class MessageWrapper {
 
     @JsonProperty

@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.*;
 
-@SuppressWarnings("unused")
+/**
+ * AuthFilter class.
+ */
 @Service
 public class AuthFilter extends OncePerRequestFilter {
 

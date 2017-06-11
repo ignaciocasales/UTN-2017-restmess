@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
  * <p>
  * SessionController class.
  */
-@SuppressWarnings("unused")
 @RestController
 @RequestMapping(
         value = "/",

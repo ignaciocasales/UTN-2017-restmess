@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Configuration;
  * <p>
  * AuthConfig class.
  */
-@SuppressWarnings("unused")
 @Configuration
 public class AuthConfig {
 

@@ -2,14 +2,11 @@ package com.utn.restmess.request.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.sql.Timestamp;
-
 /**
  * Created by ignacio on 6/8/17.
  * <p>
  * Message Request.
  */
-@SuppressWarnings("unused")
 public class MessagePostRequest {
 
     @JsonProperty

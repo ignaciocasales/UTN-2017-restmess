@@ -1,7 +1,6 @@
 package com.utn.restmess.persistence;
 
 import com.utn.restmess.entities.User;
-import javafx.beans.NamedArg;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
