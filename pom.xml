@@ -150,7 +150,7 @@
                 <configuration>
                     <formats>
                         <format>html</format>
-                        <!--<format>xml</format>-->
+                        <format>xml</format>
                     </formats>
                     <check/>
                 </configuration>
