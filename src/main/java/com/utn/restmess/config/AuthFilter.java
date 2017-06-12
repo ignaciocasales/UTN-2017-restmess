@@ -30,13 +30,13 @@ public class AuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        String sessionId = request.getHeader("sessionId");
+        String sessionId = request.getHeader("sessionid");
 
         AuthenticationData data = sessionData.getSession(sessionId);
 
         if (null != data) {
             HeaderMapRequestWrapper requestWrapper = new HeaderMapRequestWrapper(request);
-            requestWrapper.addHeader(data.getUser().getUsername());
+            requestWrapper.addHeader(data.getUsername());
             filterChain.doFilter(requestWrapper, response);
         } else {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -95,6 +95,5 @@ public class AuthFilter extends OncePerRequestFilter {
             }
             return Collections.enumeration(values);
         }
-
     }
 }

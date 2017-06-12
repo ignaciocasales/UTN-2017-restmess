@@ -240,4 +240,16 @@ public class User {
     public void setMsgList(List<Message> msgList) {
         this.msgList = msgList;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        return getId() == user.getId() &&
+                getUsername().equals(user.getUsername()) &&
+                getEmail().equals(user.getEmail());
+    }
 }

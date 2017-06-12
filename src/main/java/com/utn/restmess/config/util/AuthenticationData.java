@@ -1,6 +1,5 @@
 package com.utn.restmess.config.util;
 
-import com.utn.restmess.entities.User;
 import org.joda.time.DateTime;
 
 /**
@@ -10,22 +9,22 @@ import org.joda.time.DateTime;
  */
 public class AuthenticationData {
 
-    private User user;
+    private String username;
     private DateTime lastAction;
 
-    public User getUser() {
-        return user;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    DateTime getLastAction() {
+    public DateTime getLastAction() {
         return lastAction;
     }
 
-    void setLastAction(DateTime lastAction) {
+    public void setLastAction(DateTime lastAction) {
         this.lastAction = lastAction;
     }
 }

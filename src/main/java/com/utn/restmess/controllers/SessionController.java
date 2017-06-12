@@ -34,21 +34,29 @@ public class SessionController {
             @RequestParam("user") String username,
             @RequestParam("password") String password
     ) {
-        User user = userService.login(username, password);
+        try {
+            User user = userService.login(username, password);
 
-        if (null != user) {
-            String sessionid = sessionData.addSession(user);
-            return new ResponseEntity<>(new SessionWrapper(sessionid), HttpStatus.OK);
+            if (null != user) {
+                String sessionid = sessionData.addSession(user);
+                return new ResponseEntity<>(new SessionWrapper(sessionid), HttpStatus.OK);
+            }
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 
 
     @RequestMapping("/logout")
     public @ResponseBody
     ResponseEntity getById(@RequestHeader("sessionid") String sessionid) {
-        sessionData.removeSession(sessionid);
+        try {
+            sessionData.removeSession(sessionid);
 
-        return new ResponseEntity(HttpStatus.ACCEPTED);
+            return new ResponseEntity(HttpStatus.ACCEPTED);
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

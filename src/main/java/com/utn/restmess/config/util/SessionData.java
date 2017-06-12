@@ -31,10 +31,10 @@ public class SessionData {
         this.sessionData = new HashMap<>();
     }
 
-    public String addSession(User usuario) {
+    public String addSession(User user) {
         String sessionId = UUID.randomUUID().toString();
         AuthenticationData authData = new AuthenticationData();
-        authData.setUser(usuario);
+        authData.setUsername(user.getUsername());
         authData.setLastAction(new DateTime());
         this.sessionData.put(sessionId, authData);
         return sessionId;

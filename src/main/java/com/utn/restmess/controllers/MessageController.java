@@ -1,5 +1,7 @@
 package com.utn.restmess.controllers;
 
+import com.utn.restmess.config.util.AuthenticationData;
+import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.converter.MessageConverter;
 import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
@@ -16,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +41,22 @@ public class MessageController {
     @Autowired
     private MessageConverter messageConverter;
 
-    @RequestMapping(value = "/messages/{username}", method = RequestMethod.GET)
+    @Autowired
+    private SessionData sessionData;
+
+    @RequestMapping(
+            value = "/messages",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> inbox(@PathVariable("username") String username) {
+    ResponseEntity<List<MessageWrapper>> inbox(HttpServletRequest request) {
         try {
-            User user = userRepository.findByUsername(username);
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
 
             if (user == null) {
                 throw new NullPointerException();
@@ -50,7 +64,13 @@ public class MessageController {
 
             List<Message> messageList = user.getMsgList();
 
-            messageList.removeIf(value -> value.getStarred() || value.getDeleted() || value.getSender().equals(username));
+            messageList.removeIf(
+                    value -> value.getStarred() ||
+                            value.getDeleted() ||
+                            value.getSender().equals(user.getUsername())
+            );
+
+            data.setLastAction(DateTime.now());
 
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
@@ -65,11 +85,19 @@ public class MessageController {
     }
 
 
-    @RequestMapping(value = "/messages/{username}/sent", method = RequestMethod.GET)
+    @RequestMapping(
+            value = "/messages/sent",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> sent(@PathVariable("username") String username) {
+    ResponseEntity<List<MessageWrapper>> sent(HttpServletRequest request) {
         try {
-            User user = userRepository.findByUsername(username);
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
 
             if (user == null) {
                 throw new NullPointerException();
@@ -77,7 +105,9 @@ public class MessageController {
 
             List<Message> messageList = user.getMsgList();
 
-            messageList.removeIf(value -> !value.getSender().equals(username));
+            messageList.removeIf(value -> !value.getSender().equals(user.getUsername()));
+
+            data.setLastAction(DateTime.now());
 
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
@@ -91,11 +121,19 @@ public class MessageController {
         }
     }
 
-    @RequestMapping(value = "/messages/{username}/starred", method = RequestMethod.GET)
+    @RequestMapping(
+            value = "/messages/starred",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> starred(@PathVariable("username") String username) {
+    ResponseEntity<List<MessageWrapper>> starred(HttpServletRequest request) {
         try {
-            User user = userRepository.findByUsername(username);
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
 
             if (user == null) {
                 throw new NullPointerException();
@@ -105,6 +143,8 @@ public class MessageController {
 
             messageList.removeIf(value -> !value.getStarred() && !value.getDeleted());
 
+            data.setLastAction(DateTime.now());
+
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
             } else {
@@ -117,11 +157,19 @@ public class MessageController {
         }
     }
 
-    @RequestMapping(value = "/messages/{username}/trash", method = RequestMethod.GET)
+    @RequestMapping(
+            value = "/messages/trashed",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> trash(@PathVariable("username") String username) {
+    ResponseEntity<List<MessageWrapper>> trash(HttpServletRequest request) {
         try {
-            User user = userRepository.findByUsername(username);
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
 
             if (user == null) {
                 throw new NullPointerException();
@@ -131,6 +179,8 @@ public class MessageController {
 
             messageList.removeIf(value -> !value.getDeleted());
 
+            data.setLastAction(DateTime.now());
+
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
             } else {
@@ -143,21 +193,33 @@ public class MessageController {
         }
     }
 
-    @RequestMapping(value = "/messages", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = "/messages",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     public @ResponseBody
-    ResponseEntity send(@RequestBody MessagePostRequest request) {
+    ResponseEntity send(@RequestBody MessagePostRequest mRequest, HttpServletRequest request) {
         try {
-            User sender = userRepository.findByUsername(request.getSender());
+            String sessionId = request.getHeader("sessionid");
 
-            User recipient = userRepository.findByUsername(request.getRecipients());
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User sender = userRepository.findByUsername(data.getUsername());
+
+            User recipient = userRepository.findByUsername(mRequest.getRecipients());
+
+            if (sender == null || recipient == null) {
+                throw new NullPointerException();
+            }
 
             Message mSender = new Message();
 
-            mSender.setSender(request.getSender());
-            mSender.setRecipients(request.getRecipients());
-            mSender.setSubject(request.getSubject());
+            mSender.setSender(mRequest.getSender());
+            mSender.setRecipients(mRequest.getRecipients());
+            mSender.setSubject(mRequest.getSubject());
             mSender.setCreated(new Timestamp(DateTime.now().getMillis()));
-            mSender.setContent(request.getContent());
+            mSender.setContent(mRequest.getContent());
             mSender.setStarred(false);
             mSender.setDeleted(false);
             mSender.setUser(sender);
@@ -177,7 +239,11 @@ public class MessageController {
 
             messageRepository.save(mRecipient);
 
+            data.setLastAction(DateTime.now());
+
             return new ResponseEntity(HttpStatus.CREATED);
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
         } catch (DataIntegrityViolationException e) {
             return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.CONFLICT);
         } catch (Exception e) {
@@ -185,28 +251,48 @@ public class MessageController {
         }
     }
 
-    @RequestMapping(value = "/messages/{id}", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(
+            value = "/messages/{id}",
+            method = RequestMethod.PATCH,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
     public @ResponseBody
-    ResponseEntity delete(@PathVariable("id") long id, @RequestBody MessagePatchRequest request) {
+    ResponseEntity patch(
+            @PathVariable("id") long id,
+            @RequestBody MessagePatchRequest patchRequest,
+            HttpServletRequest request
+    ) {
         try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
+
             Message m = messageRepository.findOne(id);
 
             if (m == null) {
                 throw new NullPointerException();
             }
 
-            switch (request.getType()) {
+            if (!m.getUser().equals(user)) {
+                throw new ForbiddenException();
+            }
+
+            switch (patchRequest.getType()) {
                 case "star":
-                    m.setStarred(request.getValue());
+                    m.setStarred(patchRequest.getValue());
                     break;
                 case "delete":
-                    m.setDeleted(request.getValue());
+                    m.setDeleted(patchRequest.getValue());
                     break;
                 default:
                     throw new NotImplementedException();
             }
 
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity(HttpStatus.ACCEPTED);
+        } catch (ForbiddenException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         } catch (NotImplementedException e) {
             return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
         } catch (NullPointerException e) {
@@ -220,6 +306,7 @@ public class MessageController {
 
     private List<MessageWrapper> convertList(List<Message> message) {
         List<MessageWrapper> messageWrapperArrayList = new ArrayList<>();
+
         for (Message m : message) {
             messageWrapperArrayList.add(messageConverter.convert(m));
         }
