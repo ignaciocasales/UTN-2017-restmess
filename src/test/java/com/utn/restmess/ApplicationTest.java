@@ -1,35 +1,28 @@
 package com.utn.restmess;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import com.utn.restmess.controllers.IndexController;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Created by ignacio on 6/8/17.
  * <p>
  * Unit test for Application
  */
-public class ApplicationTest extends TestCase {
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public ApplicationTest(String testName) {
-        super(testName);
-    }
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ApplicationTest {
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite() {
-        return new TestSuite(ApplicationTest.class);
-    }
+    @Autowired
+    private IndexController controller;
 
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp() {
-        assertTrue(true);
+    @Test
+    public void contextLoads() throws Exception {
+        assertThat(controller).isNotNull();
     }
 }
