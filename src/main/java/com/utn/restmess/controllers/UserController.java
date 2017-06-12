@@ -1,17 +1,25 @@
 package com.utn.restmess.controllers;
 
 import com.google.common.collect.Lists;
+import com.utn.restmess.Services.UserService;
+import com.utn.restmess.config.util.AuthenticationData;
+import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.converter.UserConverter;
+import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
+import com.utn.restmess.persistence.MessageRepository;
 import com.utn.restmess.persistence.UserRepository;
 import com.utn.restmess.request.UserRequest;
 import com.utn.restmess.response.UserWrapper;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,76 +28,143 @@ import java.util.List;
  * <p>
  * UserController class.
  */
-@SuppressWarnings("unused")
 @RestController
-@RequestMapping(path = "/api")
+@RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
+    private MessageRepository messageRepository;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
     private UserConverter userConverter;
+
+    @Autowired
+    private SessionData sessionData;
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public @ResponseBody
     ResponseEntity<List<UserWrapper>> showAll() {
-        Iterable<User> userIterable = userRepository.findAll();
-
-        List<User> userList = Lists.newArrayList(userIterable);
-
-        if (userList.size() > 0) {
-            return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-    }
-
-    @RequestMapping(value = "/users/{name}", method = RequestMethod.GET)
-    public void showByName() {
-        //TODO
-    }
-
-    @RequestMapping(value = "/users/{name}", method = RequestMethod.GET)
-    public void showByUsername() {
-        //TODO
-    }
-
-    @RequestMapping(value = "/users",
-            method = RequestMethod.POST,
-            consumes = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity create(@RequestBody UserRequest request) {
         try {
-            User u = new User();
+            Iterable<User> userIterable = userRepository.findAll();
 
-            u.setFirstName(request.getFirstName());
-            u.setLastName(request.getLastName());
-            u.setAddress(request.getAddress());
-            u.setPhone(request.getPhone());
-            u.setCity(request.getCity());
-            u.setState(request.getState());
-            u.setCountry(request.getCountry());
-            u.setUsername(request.getUsername());
-            u.setEmail(request.getEmail());
-            u.setPassword(request.getPassword());
+            List<User> userList = Lists.newArrayList(userIterable);
 
-            userRepository.save(u);
-
-            return new ResponseEntity(HttpStatus.CREATED);
+            if (userList.size() > 0) {
+                return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
+            } else {
+                throw new NullPointerException();
+            }
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @RequestMapping(value = "/users/{username}", method = RequestMethod.DELETE)
-    public ResponseEntity destroy(@PathVariable("username") String username) {
+    @RequestMapping(value = "/users/search", method = RequestMethod.GET)
+    public @ResponseBody
+    ResponseEntity<List<UserWrapper>> showByName(@RequestParam("name") String name) {
+        try {
+            String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
+
+            List<User> userList = userRepository.findByFirstName(formattedName);
+
+            if (userList.size() > 0) {
+                return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
+            } else {
+                throw new NullPointerException("No hay usuarios con ese nombre.");
+            }
+        } catch (StringIndexOutOfBoundsException | NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(
+            value = "/users/{username}",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity<UserWrapper> showByUsername(@PathVariable("username") String username) {
         try {
             User u = userRepository.findByUsername(username);
 
+            if (u == null) {
+                throw new NullPointerException();
+            }
+
+            return new ResponseEntity<>(userConverter.convert(u), HttpStatus.OK);
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(
+            value = "/users",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity create(@RequestBody UserRequest request) {
+        try {
+            User u = userService.newUser(
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getAddress(),
+                    request.getPhone(),
+                    request.getCity(),
+                    request.getState(),
+                    request.getCountry(),
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPassword()
+            );
+
+            return new ResponseEntity<>(userConverter.convert(u), HttpStatus.CREATED);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @RequestMapping(
+            value = "/users",
+            method = RequestMethod.DELETE
+    )
+    public ResponseEntity destroy(HttpServletRequest request) {
+        try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User u = userRepository.findByUsername(data.getUsername());
+
+            if (u.getMsgList().size() > 0) {
+                for (Message m :
+                        u.getMsgList()) {
+                    messageRepository.delete(m.getId());
+                }
+            }
+
             userRepository.delete(u.getId());
 
+            data.setLastAction(DateTime.now());
+
             return new ResponseEntity(HttpStatus.OK);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity(HttpStatus.CONFLICT);
         } catch (Exception e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -97,6 +172,7 @@ public class UserController {
 
     private List<UserWrapper> convertList(List<User> user) {
         List<UserWrapper> userWrapperArrayList = new ArrayList<>();
+
         for (User c : user) {
             userWrapperArrayList.add(userConverter.convert(c));
         }

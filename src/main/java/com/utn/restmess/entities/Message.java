@@ -1,5 +1,8 @@
 package com.utn.restmess.entities;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -8,14 +11,13 @@ import java.sql.Timestamp;
  * <p>
  * Message class entity.
  */
-@SuppressWarnings("unused")
 @Entity
 @Table(name = "messages")
 public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "message_id", nullable = false)
+    @Column(name = "messageid", nullable = false)
     private long id;
 
     @Column(name = "sender", nullable = false)
@@ -38,6 +40,11 @@ public class Message {
 
     @Column(name = "deleted", nullable = false)
     private Boolean deleted;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_fk", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private User user;
 
     public Message() {
     }
@@ -139,5 +146,13 @@ public class Message {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

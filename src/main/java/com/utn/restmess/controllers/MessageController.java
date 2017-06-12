@@ -1,15 +1,25 @@
 package com.utn.restmess.controllers;
 
+import com.utn.restmess.config.util.AuthenticationData;
+import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.converter.MessageConverter;
 import com.utn.restmess.entities.Message;
+import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.MessageRepository;
+import com.utn.restmess.persistence.UserRepository;
+import com.utn.restmess.request.message.MessagePatchRequest;
+import com.utn.restmess.request.message.MessagePostRequest;
 import com.utn.restmess.response.MessageWrapper;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,49 +28,285 @@ import java.util.List;
  * <p>
  * MessageController class.
  */
-@SuppressWarnings("unused")
 @RestController
-@RequestMapping(path = "/api")
+@RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MessageController {
 
     @Autowired
     private MessageRepository messageRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private MessageConverter messageConverter;
 
-    @RequestMapping(value = "/messages/{username}", method = RequestMethod.GET)
-    public void inbox() {
-        //TODO
+    @Autowired
+    private SessionData sessionData;
+
+    @RequestMapping(
+            value = "/messages",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity<List<MessageWrapper>> inbox(HttpServletRequest request) {
+        try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
+
+            if (user == null) {
+                throw new NullPointerException();
+            }
+
+            List<Message> messageList = user.getMsgList();
+
+            messageList.removeIf(
+                    value -> value.getStarred() ||
+                            value.getDeleted() ||
+                            value.getSender().equals(user.getUsername())
+            );
+
+            data.setLastAction(DateTime.now());
+
+            if (messageList.size() > 0) {
+                return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
+            } else {
+                throw new NullPointerException();
+            }
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @RequestMapping(value = "/messages/{username}/sent", method = RequestMethod.GET)
-    public void sent() {
-        //TODO
+
+    @RequestMapping(
+            value = "/messages/sent",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity<List<MessageWrapper>> sent(HttpServletRequest request) {
+        try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
+
+            if (user == null) {
+                throw new NullPointerException();
+            }
+
+            List<Message> messageList = user.getMsgList();
+
+            messageList.removeIf(value -> !value.getSender().equals(user.getUsername()));
+
+            data.setLastAction(DateTime.now());
+
+            if (messageList.size() > 0) {
+                return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
+            } else {
+                throw new NullPointerException();
+            }
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @RequestMapping(value = "/messages/{username}/starred", method = RequestMethod.GET)
-    public void starred() {
-        //TODO
+    @RequestMapping(
+            value = "/messages/starred",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity<List<MessageWrapper>> starred(HttpServletRequest request) {
+        try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
+
+            if (user == null) {
+                throw new NullPointerException();
+            }
+
+            List<Message> messageList = user.getMsgList();
+
+            messageList.removeIf(value -> !value.getStarred() && !value.getDeleted());
+
+            data.setLastAction(DateTime.now());
+
+            if (messageList.size() > 0) {
+                return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
+            } else {
+                throw new NullPointerException();
+            }
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @RequestMapping(value = "/messages/{username}/trash", method = RequestMethod.GET)
-    public void trash() {
-        //TODO
+    @RequestMapping(
+            value = "/messages/trashed",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity<List<MessageWrapper>> trash(HttpServletRequest request) {
+        try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
+
+            if (user == null) {
+                throw new NullPointerException();
+            }
+
+            List<Message> messageList = user.getMsgList();
+
+            messageList.removeIf(value -> !value.getDeleted());
+
+            data.setLastAction(DateTime.now());
+
+            if (messageList.size() > 0) {
+                return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
+            } else {
+                throw new NullPointerException();
+            }
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @RequestMapping(value = "/messages", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void send() {
-        //TODO
+    @RequestMapping(
+            value = "/messages",
+            method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity send(@RequestBody MessagePostRequest mRequest, HttpServletRequest request) {
+        try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User sender = userRepository.findByUsername(data.getUsername());
+
+            User recipient = userRepository.findByUsername(mRequest.getRecipients());
+
+            if (sender == null || recipient == null) {
+                throw new NullPointerException();
+            }
+
+            Message mSender = new Message();
+
+            mSender.setSender(mRequest.getSender());
+            mSender.setRecipients(mRequest.getRecipients());
+            mSender.setSubject(mRequest.getSubject());
+            mSender.setCreated(new Timestamp(DateTime.now().getMillis()));
+            mSender.setContent(mRequest.getContent());
+            mSender.setStarred(false);
+            mSender.setDeleted(false);
+            mSender.setUser(sender);
+
+            Message mRecipient = new Message();
+
+            mRecipient.setSender(mSender.getSender());
+            mRecipient.setRecipients(mSender.getRecipients());
+            mRecipient.setSubject(mSender.getSubject());
+            mRecipient.setCreated(mSender.getCreated());
+            mRecipient.setContent(mSender.getContent());
+            mRecipient.setStarred(false);
+            mRecipient.setDeleted(false);
+            mRecipient.setUser(recipient);
+
+            messageRepository.save(mSender);
+
+            messageRepository.save(mRecipient);
+
+            data.setLastAction(DateTime.now());
+
+            return new ResponseEntity(HttpStatus.CREATED);
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @RequestMapping(value = "/messages/{id}", method = RequestMethod.PATCH)
-    public void delete() {
-        //TODO
+    @RequestMapping(
+            value = "/messages/{id}",
+            method = RequestMethod.PATCH,
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public @ResponseBody
+    ResponseEntity patch(
+            @PathVariable("id") long id,
+            @RequestBody MessagePatchRequest patchRequest,
+            HttpServletRequest request
+    ) {
+        try {
+            String sessionId = request.getHeader("sessionid");
+
+            AuthenticationData data = sessionData.getSession(sessionId);
+
+            User user = userRepository.findByUsername(data.getUsername());
+
+            Message m = messageRepository.findOne(id);
+
+            if (m == null) {
+                throw new NullPointerException();
+            }
+
+            if (!m.getUser().equals(user)) {
+                throw new ForbiddenException();
+            }
+
+            switch (patchRequest.getType()) {
+                case "star":
+                    m.setStarred(patchRequest.getValue());
+                    break;
+                case "delete":
+                    m.setDeleted(patchRequest.getValue());
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return new ResponseEntity(HttpStatus.ACCEPTED);
+        } catch (ForbiddenException e) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        } catch (NotImplementedException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+        } catch (NullPointerException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (DataIntegrityViolationException e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.CONFLICT);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private List<MessageWrapper> convertList(List<Message> message) {
         List<MessageWrapper> messageWrapperArrayList = new ArrayList<>();
+
         for (Message m : message) {
             messageWrapperArrayList.add(messageConverter.convert(m));
         }

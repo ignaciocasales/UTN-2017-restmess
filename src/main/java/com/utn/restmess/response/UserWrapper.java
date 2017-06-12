@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * <p>
  * User Wrapper.
  */
-@SuppressWarnings("unused")
 public class UserWrapper {
 
     @JsonProperty

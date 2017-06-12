@@ -1,5 +1,10 @@
 package com.utn.restmess.entities;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.persistence.*;
 import java.util.List;
 
@@ -8,55 +13,84 @@ import java.util.List;
  * <p>
  * User class entity.
  */
-@SuppressWarnings("unused")
 @Entity
 @Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = {"username", "email"})})
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "userid", nullable = false)
     private long id;
 
-    @Column(name = "first_name", nullable = false)
+    @NotEmpty(message = "First name is required.")
+    @Column(name = "firstname", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @NotEmpty(message = "Last Name is required.")
+    @Column(name = "lastname", nullable = false)
     private String lastName;
 
+    @NotEmpty(message = "Address is required.")
     @Column(name = "address", nullable = false)
     private String address;
 
+    @NotEmpty(message = "Phone is required.")
     @Column(name = "phone", nullable = false)
     private String phone;
 
+    @NotEmpty(message = "City is required.")
     @Column(name = "city", nullable = false)
     private String city;
 
+    @NotEmpty(message = "State is required.")
     @Column(name = "state", nullable = false)
     private String state;
 
+    @NotEmpty(message = "Country is required.")
     @Column(name = "country", nullable = false)
     private String country;
 
-    @Column(name = "username", unique = true, nullable = false)
+    @NotEmpty(message = "Username is required.")
+    @Column(name = "username", columnDefinition = "varchar(20)", unique = true, nullable = false)
     private String username;
 
+    @NotEmpty(message = "Password is required.")
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "email", unique = true, nullable = false)
+    @Email(message = "Please provide a valid email address.")
+    @NotEmpty(message = "Email is required.")
+    @Column(name = "email", columnDefinition = "varchar(50)", unique = true, nullable = false)
     private String email;
 
-    @OneToMany
-    @JoinTable(
-            name = "user_messages",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "message_id")
-    )
+    @OneToMany(mappedBy = "user")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Message> msgList;
 
     public User() {
+    }
+
+    public User(String firstName,
+                String lastName,
+                String address,
+                String phone,
+                String city,
+                String state,
+                String country,
+                String username,
+                String password,
+                String email
+    ) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.phone = phone;
+        this.city = city;
+        this.state = state;
+        this.country = country;
+        this.username = username;
+        this.password = password;
+        this.email = email;
     }
 
     public User(String firstName,
@@ -197,5 +231,25 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public List<Message> getMsgList() {
+        return msgList;
+    }
+
+    public void setMsgList(List<Message> msgList) {
+        this.msgList = msgList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        return getId() == user.getId() &&
+                getUsername().equals(user.getUsername()) &&
+                getEmail().equals(user.getEmail());
     }
 }
