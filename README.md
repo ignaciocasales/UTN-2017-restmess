@@ -1,6 +1,6 @@
 # Proyecto Segundo Parcial - REST Message Service
 
-[![Travis branch](https://img.shields.io/travis/ignaciocasales/UTN-2017-restmess/master.svg)](https://travis-ci.org/ignaciocasales/UTN-2017-restmess) [![Codecov](https://img.shields.io/codecov/c/github/codecov/UTN-2017-restmess/master.svg)](https://codecov.io/gh/ignaciocasales/UTN-2017-restmess)
+[![Travis branch](https://img.shields.io/travis/ignaciocasales/UTN-2017-restmess/master.svg)](https://travis-ci.org/ignaciocasales/UTN-2017-restmess) [![Codecov branch](https://img.shields.io/codecov/c/github/ignaciocasales/UTN-2017-restmess/master.svg)](https://codecov.io/gh/ignaciocasales/UTN-2017-restmess)
 
 ##### Desarrollado por
 
