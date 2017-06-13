@@ -5,6 +5,7 @@ import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import java.util.List;
  * Custom data loader.
  */
 @Component
+@Profile("dev")
 public class DataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired

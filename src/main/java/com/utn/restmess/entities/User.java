@@ -70,79 +70,28 @@ public class User {
     public User() {
     }
 
-    public User(String firstName,
-                String lastName,
-                String address,
-                String phone,
-                String city,
-                String state,
-                String country,
-                String username,
-                String password,
-                String email
+    public User(
+            String firstName,
+            String lastName,
+            String address,
+            String phone,
+            String city,
+            String state,
+            String country,
+            String username,
+            String password,
+            String email
     ) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
-        this.city = city;
-        this.state = state;
-        this.country = country;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-    }
-
-    public User(String firstName,
-                String lastName,
-                String address,
-                String phone,
-                String city,
-                String state,
-                String country,
-                String username,
-                String password,
-                String email,
-                List<Message> msgList
-    ) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
-        this.city = city;
-        this.state = state;
-        this.country = country;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.msgList = msgList;
-    }
-
-    public User(long id,
-                String firstName,
-                String lastName,
-                String address,
-                String phone,
-                String city,
-                String state,
-                String country,
-                String username,
-                String password,
-                String email,
-                List<Message> msgList
-    ) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.address = address;
-        this.phone = phone;
-        this.city = city;
-        this.state = state;
-        this.country = country;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.msgList = msgList;
+        this.setFirstName(firstName);
+        this.setLastName(lastName);
+        this.setAddress(address);
+        this.setPhone(phone);
+        this.setCity(city);
+        this.setState(state);
+        this.setCountry(country);
+        this.setUsername(username);
+        this.setPassword(password);
+        this.setEmail(email);
     }
 
     public long getId() {

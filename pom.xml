@@ -88,6 +88,11 @@
         </dependency>
         <!-- /MySQL Connector-J -->
 
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
         <dependency>
@@ -115,6 +120,13 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
             <version>1.2</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.3</version>
         </dependency>
 
     </dependencies>
@@ -145,7 +157,7 @@
                 <configuration>
                     <formats>
                         <format>html</format>
-                        <!--<format>xml</format>-->
+                        <format>xml</format>
                     </formats>
                     <check/>
                 </configuration>
