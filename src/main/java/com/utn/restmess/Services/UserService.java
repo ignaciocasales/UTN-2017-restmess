@@ -23,11 +23,15 @@ public class UserService {
 
         User u = userRepository.findByUsername(username);
 
-        if (encoder.matches(password, u.getPassword())) {
-            return u;
-        } else {
+        if (u == null) {
             return null;
         }
+
+        if (encoder.matches(password, u.getPassword())) {
+            return u;
+        }
+
+        return null;
     }
 
     public User newUser(
