@@ -1,7 +1,5 @@
 package com.utn.restmess.controllers;
 
-import com.utn.restmess.config.util.AuthenticationData;
-import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.converter.MessageConverter;
 import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
@@ -18,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,22 +38,15 @@ public class MessageController {
     @Autowired
     private MessageConverter messageConverter;
 
-    @Autowired
-    private SessionData sessionData;
-
     @RequestMapping(
             value = "/messages",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> inbox(HttpServletRequest request) {
+    ResponseEntity<List<MessageWrapper>> inbox(@RequestHeader("user") String username) {
         try {
-            String sessionId = request.getHeader("sessionid");
-
-            AuthenticationData data = sessionData.getSession(sessionId);
-
-            User user = userRepository.findByUsername(data.getUsername());
+            User user = userRepository.findByUsername(username);
 
             if (user == null) {
                 throw new NullPointerException();
@@ -69,8 +59,6 @@ public class MessageController {
                             value.getDeleted() ||
                             value.getSender().equals(user.getUsername())
             );
-
-            data.setLastAction(DateTime.now());
 
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
@@ -91,13 +79,9 @@ public class MessageController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> sent(HttpServletRequest request) {
+    ResponseEntity<List<MessageWrapper>> sent(@RequestHeader("user") String username) {
         try {
-            String sessionId = request.getHeader("sessionid");
-
-            AuthenticationData data = sessionData.getSession(sessionId);
-
-            User user = userRepository.findByUsername(data.getUsername());
+            User user = userRepository.findByUsername(username);
 
             if (user == null) {
                 throw new NullPointerException();
@@ -106,8 +90,6 @@ public class MessageController {
             List<Message> messageList = user.getMsgList();
 
             messageList.removeIf(value -> !value.getSender().equals(user.getUsername()));
-
-            data.setLastAction(DateTime.now());
 
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
@@ -127,13 +109,9 @@ public class MessageController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> starred(HttpServletRequest request) {
+    ResponseEntity<List<MessageWrapper>> starred(@RequestHeader("user") String username) {
         try {
-            String sessionId = request.getHeader("sessionid");
-
-            AuthenticationData data = sessionData.getSession(sessionId);
-
-            User user = userRepository.findByUsername(data.getUsername());
+            User user = userRepository.findByUsername(username);
 
             if (user == null) {
                 throw new NullPointerException();
@@ -142,8 +120,6 @@ public class MessageController {
             List<Message> messageList = user.getMsgList();
 
             messageList.removeIf(value -> !value.getStarred() && !value.getDeleted());
-
-            data.setLastAction(DateTime.now());
 
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
@@ -163,13 +139,9 @@ public class MessageController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody
-    ResponseEntity<List<MessageWrapper>> trash(HttpServletRequest request) {
+    ResponseEntity<List<MessageWrapper>> trash(@RequestHeader("user") String username) {
         try {
-            String sessionId = request.getHeader("sessionid");
-
-            AuthenticationData data = sessionData.getSession(sessionId);
-
-            User user = userRepository.findByUsername(data.getUsername());
+            User user = userRepository.findByUsername(username);
 
             if (user == null) {
                 throw new NullPointerException();
@@ -178,8 +150,6 @@ public class MessageController {
             List<Message> messageList = user.getMsgList();
 
             messageList.removeIf(value -> !value.getDeleted());
-
-            data.setLastAction(DateTime.now());
 
             if (messageList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
@@ -199,13 +169,9 @@ public class MessageController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody
-    ResponseEntity send(@RequestBody MessagePostRequest mRequest, HttpServletRequest request) {
+    ResponseEntity send(@RequestBody MessagePostRequest mRequest, @RequestHeader("user") String username) {
         try {
-            String sessionId = request.getHeader("sessionid");
-
-            AuthenticationData data = sessionData.getSession(sessionId);
-
-            User sender = userRepository.findByUsername(data.getUsername());
+            User sender = userRepository.findByUsername(username);
 
             User recipient = userRepository.findByUsername(mRequest.getRecipients());
 
@@ -239,8 +205,6 @@ public class MessageController {
 
             messageRepository.save(mRecipient);
 
-            data.setLastAction(DateTime.now());
-
             return new ResponseEntity(HttpStatus.CREATED);
         } catch (NullPointerException e) {
             return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.NOT_FOUND);
@@ -260,14 +224,10 @@ public class MessageController {
     ResponseEntity patch(
             @PathVariable("id") long id,
             @RequestBody MessagePatchRequest patchRequest,
-            HttpServletRequest request
+            @RequestHeader("user") String username
     ) {
         try {
-            String sessionId = request.getHeader("sessionid");
-
-            AuthenticationData data = sessionData.getSession(sessionId);
-
-            User user = userRepository.findByUsername(data.getUsername());
+            User user = userRepository.findByUsername(username);
 
             Message m = messageRepository.findOne(id);
 

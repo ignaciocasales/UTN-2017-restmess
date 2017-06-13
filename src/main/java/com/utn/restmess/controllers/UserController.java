@@ -2,8 +2,6 @@ package com.utn.restmess.controllers;
 
 import com.google.common.collect.Lists;
 import com.utn.restmess.Services.UserService;
-import com.utn.restmess.config.util.AuthenticationData;
-import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.converter.UserConverter;
 import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
@@ -11,7 +9,6 @@ import com.utn.restmess.persistence.MessageRepository;
 import com.utn.restmess.persistence.UserRepository;
 import com.utn.restmess.request.UserRequest;
 import com.utn.restmess.response.UserWrapper;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -19,7 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +39,6 @@ public class UserController {
 
     @Autowired
     private UserConverter userConverter;
-
-    @Autowired
-    private SessionData sessionData;
 
     @RequestMapping(value = "/users", method = RequestMethod.GET)
     public @ResponseBody
@@ -71,14 +64,18 @@ public class UserController {
     public @ResponseBody
     ResponseEntity<List<UserWrapper>> showByName(@RequestParam("name") String name) {
         try {
-            String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
+            if (!name.isEmpty()) {
+                String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
 
-            List<User> userList = userRepository.findByFirstName(formattedName);
+                List<User> userList = userRepository.findByFirstName(formattedName);
 
-            if (userList.size() > 0) {
-                return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
+                if (userList.size() > 0) {
+                    return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
+                } else {
+                    throw new NullPointerException("No hay usuarios con ese nombre.");
+                }
             } else {
-                throw new NullPointerException("No hay usuarios con ese nombre.");
+                throw new NullPointerException();
             }
         } catch (StringIndexOutOfBoundsException | NullPointerException e) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -143,13 +140,9 @@ public class UserController {
             value = "/users",
             method = RequestMethod.DELETE
     )
-    public ResponseEntity destroy(HttpServletRequest request) {
+    public ResponseEntity destroy(@RequestHeader("user") String username) {
         try {
-            String sessionId = request.getHeader("sessionid");
-
-            AuthenticationData data = sessionData.getSession(sessionId);
-
-            User u = userRepository.findByUsername(data.getUsername());
+            User u = userRepository.findByUsername(username);
 
             if (u.getMsgList().size() > 0) {
                 for (Message m :
@@ -159,8 +152,6 @@ public class UserController {
             }
 
             userRepository.delete(u.getId());
-
-            data.setLastAction(DateTime.now());
 
             return new ResponseEntity(HttpStatus.OK);
         } catch (DataIntegrityViolationException e) {

@@ -2,7 +2,6 @@ package com.utn.restmess.config.util;
 
 import com.utn.restmess.entities.User;
 import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -10,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.UUID;
+
+import static org.joda.time.DateTime.now;
 
 /**
  * Created by pablo on 01/11/16.
@@ -35,7 +36,7 @@ public class SessionData {
         String sessionId = UUID.randomUUID().toString();
         AuthenticationData authData = new AuthenticationData();
         authData.setUsername(user.getUsername());
-        authData.setLastAction(new DateTime());
+        authData.setLastAction(now());
         this.sessionData.put(sessionId, authData);
         return sessionId;
     }
@@ -48,6 +49,7 @@ public class SessionData {
     public AuthenticationData getSession(String sessionId) {
         AuthenticationData authData = this.sessionData.get(sessionId);
         if (authData != null) {
+            authData.setLastAction(now());
             return authData;
         } else {
             return null;
