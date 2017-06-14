@@ -2,6 +2,7 @@ package com.utn.restmess.Services;
 
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.UserRepository;
+import com.utn.restmess.request.UserRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,30 +35,19 @@ public class UserService {
         return null;
     }
 
-    public User newUser(
-            String firstName,
-            String lastName,
-            String address,
-            String phone,
-            String city,
-            String state,
-            String country,
-            String username,
-            String password,
-            String email
-    ) {
+    public User newUser(UserRequest userRequest) {
         User u = new User();
 
-        u.setFirstName(firstName);
-        u.setLastName(lastName);
-        u.setAddress(address);
-        u.setPhone(phone);
-        u.setCity(city);
-        u.setState(state);
-        u.setCountry(country);
-        u.setUsername(username);
-        u.setEmail(email);
-        u.setPassword(encoder.encode(password));
+        u.setFirstName(userRequest.getFirstName());
+        u.setLastName(userRequest.getLastName());
+        u.setAddress(userRequest.getAddress());
+        u.setPhone(userRequest.getPhone());
+        u.setCity(userRequest.getCity());
+        u.setState(userRequest.getState());
+        u.setCountry(userRequest.getCountry());
+        u.setUsername(userRequest.getUsername());
+        u.setEmail(userRequest.getPassword());
+        u.setPassword(encoder.encode(userRequest.getEmail()));
 
         return userRepository.save(u);
     }

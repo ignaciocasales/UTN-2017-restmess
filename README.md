@@ -13,7 +13,7 @@
 |     GET     | /api/users              | Devuelve en JSON todos los usarios del sistema.                |     200/204/401/500     |
 |     GET     | /api/users/search?name= | Devuelve en JSON todos los usarios con ese nombre del sistema. |     200/204/401/500     |
 |     GET     | /api/users/{username}   | Devuelve en JSON un usuario.                                   |     200/204/401/500     |
-|     POST    | /api/users              | Crea un usuario en el sistema.                                 |     201/401/409/500     |
+|     POST    | /users                  | Crea un usuario en el sistema.                                 |     201/401/409/500     |
 |    DELETE   | /api/users              | Borra un usuario por su username.                              |     200/401/409/500     |
 |     GET     | /api/messages           | Devuelve en JSON el inbox de un usuario.                       |     200/204/401/500     |
 |     GET     | /api/messages/sent      | Devuelve en JSON los enviados de un usuario.                   | 200/204/401/500         |

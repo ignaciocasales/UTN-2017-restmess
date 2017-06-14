@@ -7,6 +7,7 @@ import com.utn.restmess.persistence.UserRepository;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,8 +56,6 @@ public class SessionControllerTest {
 
     @Before
     public void setup() throws Exception {
-        this.userRepository.deleteAll();
-
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
 
         this.u = new User(
@@ -73,6 +72,11 @@ public class SessionControllerTest {
         );
 
         this.u = userRepository.save(u);
+    }
+
+    @After
+    public void setupAfter() throws Exception {
+        this.userRepository.deleteAll();
     }
 
     @Test

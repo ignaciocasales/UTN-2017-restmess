@@ -8,9 +8,9 @@ import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.MessageRepository;
 import com.utn.restmess.persistence.UserRepository;
 import com.utn.restmess.request.UserRequest;
+import com.utn.restmess.response.ErrorMessageWrapper;
 import com.utn.restmess.response.UserWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ import java.util.List;
  * UserController class.
  */
 @RestController
-@RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
     @Autowired
@@ -40,9 +40,9 @@ public class UserController {
     @Autowired
     private UserConverter userConverter;
 
-    @RequestMapping(value = "/users", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/users", method = RequestMethod.GET)
     public @ResponseBody
-    ResponseEntity<List<UserWrapper>> showAll() {
+    ResponseEntity showAll() {
         try {
             Iterable<User> userIterable = userRepository.findAll();
 
@@ -51,18 +51,18 @@ public class UserController {
             if (userList.size() > 0) {
                 return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
             } else {
-                throw new NullPointerException();
+                throw new NoUsersException("No hay usuarios.");
             }
-        } catch (NullPointerException e) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (NoUsersException e) {
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @RequestMapping(value = "/users/search", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/users/search", method = RequestMethod.GET)
     public @ResponseBody
-    ResponseEntity<List<UserWrapper>> showByName(@RequestParam("name") String name) {
+    ResponseEntity showByName(@RequestParam("name") String name) {
         try {
             if (!name.isEmpty()) {
                 String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
@@ -72,37 +72,37 @@ public class UserController {
                 if (userList.size() > 0) {
                     return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
                 } else {
-                    throw new NullPointerException("No hay usuarios con ese nombre.");
+                    throw new NoUsersException("No hay usuarios con ese nombre.");
                 }
             } else {
-                throw new NullPointerException();
+                throw new NoUsersException("Ingrese un usuario.");
             }
-        } catch (StringIndexOutOfBoundsException | NullPointerException e) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (NoUsersException e) {
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping(
-            value = "/users/{username}",
+            value = "/api/users/{username}",
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody
-    ResponseEntity<UserWrapper> showByUsername(@PathVariable("username") String username) {
+    ResponseEntity showByUsername(@PathVariable("username") String username) {
         try {
             User u = userRepository.findByUsername(username);
 
             if (u == null) {
-                throw new NullPointerException();
+                throw new NoUsersException("No hay usuarios con ese username.");
             }
 
             return new ResponseEntity<>(userConverter.convert(u), HttpStatus.OK);
-        } catch (NullPointerException e) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (NoUsersException e) {
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -115,49 +115,40 @@ public class UserController {
     public @ResponseBody
     ResponseEntity create(@RequestBody UserRequest request) {
         try {
-            User u = userService.newUser(
-                    request.getFirstName(),
-                    request.getLastName(),
-                    request.getAddress(),
-                    request.getPhone(),
-                    request.getCity(),
-                    request.getState(),
-                    request.getCountry(),
-                    request.getUsername(),
-                    request.getEmail(),
-                    request.getPassword()
-            );
+            if (userRepository.countByUsername(request.getUsername()) > 0) {
+                throw new DuplicateUsernameException("Nombre de usuario ya usado.");
+            } else if (userRepository.countByEmail(request.getEmail()) > 0) {
+                throw new DuplicateEmailException("Email ya registrado.");
+            } else {
+                User u = userService.newUser(request);
 
-            return new ResponseEntity<>(userConverter.convert(u), HttpStatus.CREATED);
-        } catch (DataIntegrityViolationException e) {
-            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.CONFLICT);
+                return new ResponseEntity<>(userConverter.convert(u), HttpStatus.CREATED);
+            }
+        } catch (DuplicateUsernameException | DuplicateEmailException e) {
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.CONFLICT);
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getLocalizedMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @RequestMapping(
-            value = "/users",
+            value = "/api/users",
             method = RequestMethod.DELETE
     )
     public ResponseEntity destroy(@RequestHeader("user") String username) {
         try {
             User u = userRepository.findByUsername(username);
 
-            if (u.getMsgList().size() > 0) {
-                for (Message m :
-                        u.getMsgList()) {
-                    messageRepository.delete(m.getId());
-                }
+            for (Message m :
+                    u.getMsgList()) {
+                messageRepository.delete(m.getId());
             }
 
             userRepository.delete(u.getId());
 
             return new ResponseEntity(HttpStatus.OK);
-        } catch (DataIntegrityViolationException e) {
-            return new ResponseEntity(HttpStatus.CONFLICT);
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
