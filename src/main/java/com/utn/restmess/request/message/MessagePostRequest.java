@@ -10,9 +10,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class MessagePostRequest {
 
     @JsonProperty
-    private String sender;
-
-    @JsonProperty
     private String recipients;
 
     @JsonProperty
@@ -20,14 +17,6 @@ public class MessagePostRequest {
 
     @JsonProperty
     private String content;
-
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
 
     public String getRecipients() {
         return recipients;

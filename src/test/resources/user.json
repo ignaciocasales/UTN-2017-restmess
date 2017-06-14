@@ -1,0 +1,12 @@
+{
+  "address": "TestAddress",
+  "city": "TestCity",
+  "country": "TestCountry",
+  "email": "TestEmail@testemail.com",
+  "first_name": "TesName",
+  "last_name": "TestSurname",
+  "password": "TestPassword",
+  "phone": "TestPhone",
+  "state": "TestState",
+  "username": "TestUsername"
+}

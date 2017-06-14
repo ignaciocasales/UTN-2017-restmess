@@ -49,32 +49,15 @@ public class Message {
     public Message() {
     }
 
-    public Message(String sender,
-                   String recipients,
-                   String subject,
-                   Timestamp created,
-                   String content,
-                   Boolean starred,
-                   Boolean deleted) {
-        this.sender = sender;
-        this.recipients = recipients;
-        this.subject = subject;
-        this.created = created;
-        this.content = content;
-        this.starred = starred;
-        this.deleted = deleted;
-    }
-
-    public Message(long id,
-                   String sender,
-                   String recipients,
-                   String subject,
-                   Timestamp created,
-                   String content,
-                   Boolean starred,
-                   Boolean deleted
+    public Message(
+            String sender,
+            String recipients,
+            String subject,
+            Timestamp created,
+            String content,
+            Boolean starred,
+            Boolean deleted
     ) {
-        this.id = id;
         this.sender = sender;
         this.recipients = recipients;
         this.subject = subject;

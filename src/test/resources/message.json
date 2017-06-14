@@ -1,0 +1,5 @@
+{
+  "recipients" : "recipient",
+  "subject" : "TestSubject",
+  "content" : "TestContent"
+}

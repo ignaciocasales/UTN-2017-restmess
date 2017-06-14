@@ -58,7 +58,7 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Email(message = "Please provide a valid email address.")
+    /*@Email(message = "Please provide a valid email address.")*/
     @NotEmpty(message = "Email is required.")
     @Column(name = "email", columnDefinition = "varchar(50)", unique = true, nullable = false)
     private String email;
