@@ -4,6 +4,7 @@ import com.utn.restmess.Application;
 import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.UserRepository;
+import com.utn.restmess.services.Encrypter;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
@@ -14,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -50,7 +50,8 @@ public class SessionControllerTest {
     @Autowired
     private SessionData sessionData;
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+    @Autowired
+    private Encrypter encrypter;
 
     private User u;
 
@@ -67,7 +68,7 @@ public class SessionControllerTest {
                 "TestState",
                 "TestCountry",
                 "TestUsername",
-                encoder.encode("TestPassword"),
+                encrypter.encrypt("TestPassword"),
                 "TestEmail@testemail.com"
         );
 

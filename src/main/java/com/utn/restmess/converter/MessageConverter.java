@@ -13,9 +13,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class MessageConverter {
 
-    public MessageConverter() {
-    }
-
     public MessageWrapper convert(Message message) {
         MessageWrapper m = new MessageWrapper();
 

@@ -8,6 +8,7 @@ import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.MessageRepository;
 import com.utn.restmess.persistence.UserRepository;
+import com.utn.restmess.services.Encrypter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -56,9 +56,10 @@ public class MessageControllerTest {
     @Autowired
     private SessionData sessionData;
 
-    private String sessionid;
+    @Autowired
+    private Encrypter encrypter;
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+    private String sessionid;
 
     private User u;
 
@@ -77,7 +78,7 @@ public class MessageControllerTest {
                 "TestState",
                 "TestCountry",
                 "TestUsername",
-                encoder.encode("TestPassword"),
+                encrypter.encrypt("TestPassword"),
                 "TestEmail@testemail.com"
         );
 
@@ -282,7 +283,7 @@ public class MessageControllerTest {
                 "TestState",
                 "TestCountry",
                 "recipient",
-                encoder.encode("TestPassword"),
+                encrypter.encrypt("TestPassword"),
                 "recipient@testemail.com"
         );
 
@@ -291,7 +292,7 @@ public class MessageControllerTest {
         userRepository.save(recipient);
 
         mockMvc.perform(
-                post("/api/messages")
+                put("/api/messages")
                         .header("sessionid", this.sessionid)
                         .header("user", this.u.getUsername())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -306,7 +307,7 @@ public class MessageControllerTest {
         String json = Resources.toString(url, Charsets.UTF_8);
 
         mockMvc.perform(
-                post("/api/messages")
+                put("/api/messages")
                         .header("sessionid", this.sessionid)
                         .header("user", this.u.getUsername())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -317,17 +318,22 @@ public class MessageControllerTest {
 
     @Test
     public void patchStarSuccess() throws Exception {
-        URL url = Resources.getResource("patchmessagestar.json");
-        String json = Resources.toString(url, Charsets.UTF_8);
-
         this.u = userRepository.save(u);
 
         this.m.setUser(this.u);
 
         this.m = messageRepository.save(m);
 
+        String json = "{\n" +
+                "  \"type\": \"star\",\n" +
+                "  \"idList\":[\n" +
+                "    \"" + m.getId() + "\"\n" +
+                "  ],\n" +
+                "  \"value\": \"true\"\n" +
+                "}";
+
         mockMvc.perform(
-                patch("/api/messages/" + m.getId())
+                patch("/api/messages")
                         .header("sessionid", this.sessionid)
                         .header("user", this.u.getUsername())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -338,17 +344,22 @@ public class MessageControllerTest {
 
     @Test
     public void patchDeleteSuccess() throws Exception {
-        URL url = Resources.getResource("patchmessagedelete.json");
-        String json = Resources.toString(url, Charsets.UTF_8);
-
         this.u = userRepository.save(u);
 
         this.m.setUser(this.u);
 
         this.m = messageRepository.save(m);
 
+        String json = "{\n" +
+                "  \"type\": \"delete\",\n" +
+                "  \"idList\":[\n" +
+                "    \"" + m.getId() + "\"\n" +
+                "  ],\n" +
+                "  \"value\": \"true\"\n" +
+                "}";
+
         mockMvc.perform(
-                patch("/api/messages/" + m.getId())
+                patch("/api/messages")
                         .header("sessionid", this.sessionid)
                         .header("user", this.u.getUsername())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -359,13 +370,18 @@ public class MessageControllerTest {
 
     @Test
     public void patchNoMessage() throws Exception {
-        URL url = Resources.getResource("patchmessagestar.json");
-        String json = Resources.toString(url, Charsets.UTF_8);
-
         this.u = userRepository.save(u);
 
+        String json = "{\n" +
+                "  \"type\": \"star\",\n" +
+                "  \"idList\":[\n" +
+                "    \"1\"\n" +
+                "  ],\n" +
+                "  \"value\": \"true\"\n" +
+                "}";
+
         mockMvc.perform(
-                patch("/api/messages/1")
+                patch("/api/messages")
                         .header("sessionid", this.sessionid)
                         .header("user", this.u.getUsername())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -376,9 +392,6 @@ public class MessageControllerTest {
 
     @Test
     public void patchForbidden() throws Exception {
-        URL url = Resources.getResource("patchmessagestar.json");
-        String json = Resources.toString(url, Charsets.UTF_8);
-
         this.u = userRepository.save(u);
 
         User otherUser = userRepository.save(new User(
@@ -390,7 +403,7 @@ public class MessageControllerTest {
                 "TestState",
                 "TestCountry",
                 "OtherUser",
-                encoder.encode("TestPassword"),
+                encrypter.encrypt("TestPassword"),
                 "OtherUser@testemail.com"
         ));
 
@@ -398,8 +411,16 @@ public class MessageControllerTest {
 
         this.m = messageRepository.save(m);
 
+        String json = "{\n" +
+                "  \"type\": \"star\",\n" +
+                "  \"idList\":[\n" +
+                "    \"" + m.getId() + "\"\n" +
+                "  ],\n" +
+                "  \"value\": \"true\"\n" +
+                "}";
+
         mockMvc.perform(
-                patch("/api/messages/" + m.getId())
+                patch("/api/messages")
                         .header("sessionid", this.sessionid)
                         .header("user", this.u.getUsername())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -410,17 +431,22 @@ public class MessageControllerTest {
 
     @Test
     public void patchNotImplemented() throws Exception {
-        URL url = Resources.getResource("patchnotimplementedmessage.json");
-        String json = Resources.toString(url, Charsets.UTF_8);
-
         this.u = userRepository.save(u);
 
         this.m.setUser(this.u);
 
         this.m = messageRepository.save(m);
 
+        String json = "{\n" +
+                "  \"type\": \"someotherpatch\",\n" +
+                "  \"idList\":[\n" +
+                "    \"" + m.getId() + "\"\n" +
+                "  ],\n" +
+                "  \"value\": \"true\"\n" +
+                "}";
+
         mockMvc.perform(
-                patch("/api/messages/" + m.getId())
+                patch("/api/messages")
                         .header("sessionid", this.sessionid)
                         .header("user", this.u.getUsername())
                         .contentType(MediaType.APPLICATION_JSON_UTF8)

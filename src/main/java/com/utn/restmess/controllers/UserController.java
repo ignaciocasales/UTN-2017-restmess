@@ -1,15 +1,16 @@
 package com.utn.restmess.controllers;
 
-import com.google.common.collect.Lists;
-import com.utn.restmess.Services.UserService;
 import com.utn.restmess.converter.UserConverter;
-import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.MessageRepository;
 import com.utn.restmess.persistence.UserRepository;
 import com.utn.restmess.request.UserRequest;
 import com.utn.restmess.response.ErrorMessageWrapper;
 import com.utn.restmess.response.UserWrapper;
+import com.utn.restmess.services.DuplicateEmailException;
+import com.utn.restmess.services.DuplicateUsernameException;
+import com.utn.restmess.services.NoUsersException;
+import com.utn.restmess.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -44,15 +45,9 @@ public class UserController {
     public @ResponseBody
     ResponseEntity showAll() {
         try {
-            Iterable<User> userIterable = userRepository.findAll();
+            List<User> userList = userService.getAll();
 
-            List<User> userList = Lists.newArrayList(userIterable);
-
-            if (userList.size() > 0) {
-                return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
-            } else {
-                throw new NoUsersException("No hay usuarios.");
-            }
+            return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
         } catch (NoUsersException e) {
             return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.NO_CONTENT);
         } catch (Exception e) {
@@ -64,19 +59,9 @@ public class UserController {
     public @ResponseBody
     ResponseEntity showByName(@RequestParam("name") String name) {
         try {
-            if (!name.isEmpty()) {
-                String formattedName = name.substring(0, 1).toUpperCase() + name.substring(1);
+            List<User> userList = userService.getByName(name);
 
-                List<User> userList = userRepository.findByFirstName(formattedName);
-
-                if (userList.size() > 0) {
-                    return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
-                } else {
-                    throw new NoUsersException("No hay usuarios con ese nombre.");
-                }
-            } else {
-                throw new NoUsersException("Ingrese un usuario.");
-            }
+            return new ResponseEntity<>(this.convertList(userList), HttpStatus.OK);
         } catch (NoUsersException e) {
             return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.NO_CONTENT);
         } catch (Exception e) {
@@ -92,11 +77,7 @@ public class UserController {
     public @ResponseBody
     ResponseEntity showByUsername(@PathVariable("username") String username) {
         try {
-            User u = userRepository.findByUsername(username);
-
-            if (u == null) {
-                throw new NoUsersException("No hay usuarios con ese username.");
-            }
+            User u = userService.getByUsername(username);
 
             return new ResponseEntity<>(userConverter.convert(u), HttpStatus.OK);
         } catch (NoUsersException e) {
@@ -108,22 +89,16 @@ public class UserController {
 
     @RequestMapping(
             value = "/users",
-            method = RequestMethod.POST,
+            method = RequestMethod.PUT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public @ResponseBody
     ResponseEntity create(@RequestBody UserRequest request) {
         try {
-            if (userRepository.countByUsername(request.getUsername()) > 0) {
-                throw new DuplicateUsernameException("Nombre de usuario ya usado.");
-            } else if (userRepository.countByEmail(request.getEmail()) > 0) {
-                throw new DuplicateEmailException("Email ya registrado.");
-            } else {
-                User u = userService.newUser(request);
+            User u = userService.create(request);
 
-                return new ResponseEntity<>(userConverter.convert(u), HttpStatus.CREATED);
-            }
+            return new ResponseEntity<>(userConverter.convert(u), HttpStatus.CREATED);
         } catch (DuplicateUsernameException | DuplicateEmailException e) {
             return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.CONFLICT);
         } catch (Exception e) {
@@ -137,14 +112,7 @@ public class UserController {
     )
     public ResponseEntity destroy(@RequestHeader("user") String username) {
         try {
-            User u = userRepository.findByUsername(username);
-
-            for (Message m :
-                    u.getMsgList()) {
-                messageRepository.delete(m.getId());
-            }
-
-            userRepository.delete(u.getId());
+            userService.destroy(username);
 
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {

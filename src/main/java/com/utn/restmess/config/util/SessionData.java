@@ -1,7 +1,6 @@
 package com.utn.restmess.config.util;
 
 import com.utn.restmess.entities.User;
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -20,16 +19,14 @@ import static org.joda.time.DateTime.now;
 @Service
 public class SessionData {
 
-    @SuppressWarnings("unused")
-    final static Logger logger = Logger.getLogger(SessionData.class);
-    private HashMap<String, AuthenticationData> sessionData;
+    private HashMap<String, AuthenticationData> authenticationData;
 
     @Value("${session.expiration}")
     private int expirationTime;
 
 
     public SessionData() {
-        this.sessionData = new HashMap<>();
+        this.authenticationData = new HashMap<>();
     }
 
     public String addSession(User user) {
@@ -37,17 +34,17 @@ public class SessionData {
         AuthenticationData authData = new AuthenticationData();
         authData.setUsername(user.getUsername());
         authData.setLastAction(now());
-        this.sessionData.put(sessionId, authData);
+        this.authenticationData.put(sessionId, authData);
         return sessionId;
     }
 
 
     public void removeSession(String sessionId) {
-        sessionData.remove(sessionId);
+        authenticationData.remove(sessionId);
     }
 
     public AuthenticationData getSession(String sessionId) {
-        AuthenticationData authData = this.sessionData.get(sessionId);
+        AuthenticationData authData = this.authenticationData.get(sessionId);
         if (authData != null) {
             authData.setLastAction(now());
             return authData;
@@ -58,13 +55,11 @@ public class SessionData {
 
     @Scheduled(fixedRate = 5000)
     public void checkSessions() {
-        //System.out.println("Checking sessions");
-        Set<String> sessionsId = this.sessionData.keySet();
+        Set<String> sessionsId = this.authenticationData.keySet();
         for (String sessionId : sessionsId) {
-            AuthenticationData aData = this.sessionData.get(sessionId);
+            AuthenticationData aData = this.authenticationData.get(sessionId);
             if (aData.getLastAction().plusSeconds(expirationTime).isBefore(System.currentTimeMillis())) {
-                //System.out.println("Deleting sessionId = " + sessionId);
-                this.sessionData.remove(sessionId);
+                this.authenticationData.remove(sessionId);
             }
         }
     }
