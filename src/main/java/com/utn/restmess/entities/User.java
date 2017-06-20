@@ -62,8 +62,8 @@ public class User {
     @Column(name = "email", columnDefinition = "varchar(50)", unique = true, nullable = false)
     private String email;
 
-    @OneToMany(mappedBy = "user")
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @OneToMany(mappedBy = "user")
     private List<Message> msgList;
 
     public User() {

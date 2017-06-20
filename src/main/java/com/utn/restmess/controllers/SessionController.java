@@ -1,9 +1,9 @@
 package com.utn.restmess.controllers;
 
-import com.utn.restmess.services.UserService;
 import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.response.SessionWrapper;
+import com.utn.restmess.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

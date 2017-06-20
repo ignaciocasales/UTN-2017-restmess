@@ -12,9 +12,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserConverter {
 
-    public UserConverter() {
-    }
-
     public UserWrapper convert(User user) {
         UserWrapper u = new UserWrapper();
 

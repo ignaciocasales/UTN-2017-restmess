@@ -1,4 +1,4 @@
-package com.utn.restmess.controllers;
+package com.utn.restmess.services;
 
 /**
  * Created by ignacio on 6/12/17.
@@ -6,4 +6,8 @@ package com.utn.restmess.controllers;
  * ForbiddenException class.
  */
 public class ForbiddenException extends Exception {
+
+    public ForbiddenException(String s) {
+        super(s);
+    }
 }

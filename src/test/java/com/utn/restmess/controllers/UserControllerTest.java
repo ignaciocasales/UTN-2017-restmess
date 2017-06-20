@@ -8,6 +8,7 @@ import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.MessageRepository;
 import com.utn.restmess.persistence.UserRepository;
+import com.utn.restmess.services.Encrypter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +16,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -44,18 +44,23 @@ public class UserControllerTest {
 
 
     private MockMvc mockMvc;
+
     @Autowired
     private WebApplicationContext webApplicationContext;
+
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private MessageRepository messageRepository;
+
     @Autowired
     private SessionData sessionData;
 
     private String sessionid;
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+    @Autowired
+    private Encrypter encrypter;
 
     private User u;
 
@@ -72,7 +77,7 @@ public class UserControllerTest {
                 "TestState",
                 "TestCountry",
                 "TestUsername",
-                encoder.encode("TestPassword"),
+                encrypter.encrypt("TestPassword"),
                 "TestEmail@testemail.com"
         );
 
@@ -175,7 +180,7 @@ public class UserControllerTest {
         String json = Resources.toString(url, Charsets.UTF_8);
 
         mockMvc.perform(
-                post("/users")
+                put("/users")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(json)
         )
@@ -191,7 +196,7 @@ public class UserControllerTest {
         this.u = userRepository.save(u);
 
         mockMvc.perform(
-                post("/users")
+                put("/users")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(json)
         )
@@ -208,7 +213,7 @@ public class UserControllerTest {
         this.u = userRepository.save(u);
 
         mockMvc.perform(
-                post("/users")
+                put("/users")
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .content(json)
         )

@@ -1,17 +1,23 @@
 package com.utn.restmess.config.dataloader;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.UserRepository;
+import com.utn.restmess.services.Encrypter;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,10 +31,12 @@ public class DataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private Encrypter encrypter;
 
     private List<User> userList = new ArrayList<>();
 
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(16);
+    private final static Logger logger = Logger.getLogger(DataLoader.class);
 
     @Override
     @Transactional
@@ -44,77 +52,15 @@ public class DataLoader implements ApplicationListener<ContextRefreshedEvent> {
     }
 
     private void generateUsers() {
-        this.userList.add(new User(
-                "Homer",
-                "Simpson",
-                "742 Evergreen Terrace",
-                "1-(619)174-5105",
-                "Springfield",
-                "California",
-                "United States",
-                "HSimpson",
-                encoder.encode("HSimpson123"),
-                "HSimpson@mail.com"
-        ));
-        this.userList.add(new User(
-                "Bart",
-                "Simpson",
-                "742 Evergreen Terrace",
-                "1-(619)174-5106",
-                "Springfield",
-                "California",
-                "United States",
-                "BSimpson",
-                encoder.encode("BSimpson123"),
-                "BSimpson@mail.com"
-        ));
-        this.userList.add(new User(
-                "Lisa",
-                "Simpson",
-                "742 Evergreen Terrace",
-                "1-(619)174-5107",
-                "Springfield",
-                "California",
-                "United States",
-                "LSimpson",
-                encoder.encode("LSimpson123"),
-                "LSimpson@mail.com"
-        ));
-        this.userList.add(new User(
-                "Rick",
-                "Sanchez",
-                "Earth (Dimension C-137)",
-                "1-(619)174-5108",
-                "Springfield",
-                "California",
-                "United States",
-                "RSanchez",
-                encoder.encode("RSanchez123"),
-                "RSanchez@mail.com"
-        ));
-        this.userList.add(new User(
-                "Morty",
-                "Smith",
-                "Earth (Dimension C-137)",
-                "1-(619)174-5109",
-                "Springfield",
-                "California",
-                "United States",
-                "MSmith",
-                encoder.encode("MSmith123"),
-                "MSmith@mail.com"
-        ));
-        this.userList.add(new User(
-                "Jerry",
-                "Smith",
-                "Earth (Dimension C-137)",
-                "1-(619)174-5110",
-                "Springfield",
-                "California",
-                "United States",
-                "JSmith",
-                encoder.encode("JSmith123"),
-                "JSmith@mail.com"
-        ));
+        URL url = Resources.getResource("users.json");
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            User[] usersArray = mapper.readValue(url, User[].class);
+
+            this.userList = new ArrayList<>(Arrays.asList(usersArray));
+        } catch (IOException e) {
+            logger.error("Can't read users.json");
+        }
     }
 }

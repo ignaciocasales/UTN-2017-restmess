@@ -1,4 +1,4 @@
-package com.utn.restmess.controllers;
+package com.utn.restmess.services;
 
 /**
  * Created by ignacio on 6/14/17.
