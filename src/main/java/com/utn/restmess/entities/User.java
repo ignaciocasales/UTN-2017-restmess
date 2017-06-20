@@ -2,7 +2,6 @@ package com.utn.restmess.entities;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
@@ -200,5 +199,12 @@ public class User {
         return getId() == user.getId() &&
                 getUsername().equals(user.getUsername()) &&
                 getEmail().equals(user.getEmail());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getUsername().hashCode();
+        result = 31 * result + getEmail().hashCode();
+        return result;
     }
 }

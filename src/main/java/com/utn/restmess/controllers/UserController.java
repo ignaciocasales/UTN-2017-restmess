@@ -1,7 +1,8 @@
 package com.utn.restmess.controllers;
 
 import com.google.common.collect.Lists;
-import com.utn.restmess.Services.UserService;
+import com.utn.restmess.services.NoUsersException;
+import com.utn.restmess.services.UserService;
 import com.utn.restmess.converter.UserConverter;
 import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;

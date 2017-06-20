@@ -1,6 +1,6 @@
 package com.utn.restmess.controllers;
 
-import com.utn.restmess.Services.UserService;
+import com.utn.restmess.services.UserService;
 import com.utn.restmess.config.util.SessionData;
 import com.utn.restmess.entities.User;
 import com.utn.restmess.response.SessionWrapper;

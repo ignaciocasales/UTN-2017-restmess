@@ -1,4 +1,4 @@
-package com.utn.restmess.Services;
+package com.utn.restmess.services;
 
 import com.utn.restmess.entities.User;
 import com.utn.restmess.persistence.UserRepository;
@@ -50,5 +50,9 @@ public class UserService {
         u.setPassword(encoder.encode(userRequest.getEmail()));
 
         return userRepository.save(u);
+    }
+
+    public User findByUsername(String username){
+        return userRepository.findByUsername(username);
     }
 }

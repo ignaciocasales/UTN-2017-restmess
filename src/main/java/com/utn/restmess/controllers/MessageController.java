@@ -1,6 +1,5 @@
 package com.utn.restmess.controllers;
 
-import com.utn.restmess.Services.MessageService;
 import com.utn.restmess.converter.MessageConverter;
 import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
@@ -10,6 +9,10 @@ import com.utn.restmess.request.message.MessagePatchRequest;
 import com.utn.restmess.request.message.MessagePostRequest;
 import com.utn.restmess.response.ErrorMessageWrapper;
 import com.utn.restmess.response.MessageWrapper;
+import com.utn.restmess.services.MessageService;
+import com.utn.restmess.services.NoMessagesException;
+import com.utn.restmess.services.NoUsersException;
+import com.utn.restmess.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,6 +41,9 @@ public class MessageController {
     private MessageConverter messageConverter;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private MessageService messageService;
 
     @RequestMapping(
@@ -48,25 +54,9 @@ public class MessageController {
     public @ResponseBody
     ResponseEntity inbox(@RequestHeader("user") String username) {
         try {
-            User user = userRepository.findByUsername(username);
+            List<Message> messageList = messageService.getInbox(username);
 
-            if (user == null) {
-                throw new NoUsersException("Error al cargar el inbox.");
-            }
-
-            List<Message> messageList = user.getMsgList();
-
-            messageList.removeIf(
-                    value -> value.getStarred() ||
-                            value.getDeleted() ||
-                            value.getSender().equals(user.getUsername())
-            );
-
-            if (messageList.size() > 0) {
-                return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
-            } else {
-                throw new NoMessagesException("No hay mensajes.");
-            }
+            return new ResponseEntity<>(this.convertList(messageList), HttpStatus.OK);
         } catch (NoUsersException | NoMessagesException e) {
             return new ResponseEntity<>(new ErrorMessageWrapper(e.getMessage()), HttpStatus.NO_CONTENT);
         } catch (Exception e) {

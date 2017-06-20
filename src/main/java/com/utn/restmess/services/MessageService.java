@@ -1,4 +1,4 @@
-package com.utn.restmess.Services;
+package com.utn.restmess.services;
 
 import com.utn.restmess.entities.Message;
 import com.utn.restmess.entities.User;
@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Created by ignacio on 6/14/17.
@@ -20,6 +21,9 @@ public class MessageService {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private UserService userService;
 
     public void newMessage(MessagePostRequest mRequest, User sender, User reciever) {
         Message mSender = new Message();
@@ -46,5 +50,34 @@ public class MessageService {
 
         messageRepository.save(mSender);
         messageRepository.save(mReciever);
+    }
+
+    public List<Message> getInbox(String username) throws NoUsersException,
+            NoMessagesException {
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            throw new NoUsersException("Error al cargar el inbox.");
+        }
+
+        List<Message> messageList = user.getMsgList();
+
+        if (messageList.size() <= 0) {
+            throw new NoMessagesException("No hay mensajes.");
+        }
+
+        messageList.removeIf(
+                value -> value.getStarred() ||
+                        value.getDeleted() ||
+                        value.getSender().equals(user.getUsername())
+        );
+
+        messageList = sortByDate(messageList);
+
+        return messageList;
+    }
+
+    private List<Message> sortByDate(List<Message> messageList) {
+        return null;
     }
 }
