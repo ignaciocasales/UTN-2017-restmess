@@ -138,7 +138,7 @@ public class UserService {
      * @param request UserRequest
      * @return User
      * @throws DuplicateUsernameException El nombre de usuario debe ser unico.
-     * @throws DuplicateEmailException El mail de contacto debe ser unico.
+     * @throws DuplicateEmailException    El mail de contacto debe ser unico.
      */
     public User create(UserRequest request) throws DuplicateUsernameException, DuplicateEmailException {
         if (userRepository.countByUsername(request.getUsername()) > 0) {
