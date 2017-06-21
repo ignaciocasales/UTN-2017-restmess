@@ -29,14 +29,12 @@ import java.util.List;
 @Profile("dev")
 public class DataLoader implements ApplicationListener<ContextRefreshedEvent> {
 
+    private final static Logger logger = Logger.getLogger(DataLoader.class);
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private Encrypter encrypter;
-
     private List<User> userList = new ArrayList<>();
-
-    private final static Logger logger = Logger.getLogger(DataLoader.class);
 
     @Override
     @Transactional
